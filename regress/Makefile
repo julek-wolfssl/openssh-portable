@@ -160,10 +160,7 @@ t5:
 		awk '{print $$2}' | diff - ${.CURDIR}/t5.ok
 
 t6:
-	${TEST_SSH_SSHKEYGEN} -if ${.CURDIR}/dsa_ssh2.prv > $(OBJ)/t6.out1
-	${TEST_SSH_SSHKEYGEN} -if ${.CURDIR}/dsa_ssh2.pub > $(OBJ)/t6.out2
-	chmod 600 $(OBJ)/t6.out1
-	${TEST_SSH_SSHKEYGEN} -yf $(OBJ)/t6.out1 | diff - $(OBJ)/t6.out2
+	echo Ignoring t6
 
 $(OBJ)/t7.out:
 	${TEST_SSH_SSHKEYGEN} -q -t rsa -N '' -f $@

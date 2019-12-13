@@ -158,6 +158,8 @@ sshkey_fuzz_tests(void)
 	fuzz_cleanup(fuzz);
 	TEST_DONE();
 
+#ifndef USING_WOLFSSL
+    /* wolfSSL does not support DSA in the EVP layer */
 	TEST_START("fuzz DSA private");
 	buf = load_file("dsa_1");
 	fuzz = fuzz_begin(FUZZ_BASE64, sshbuf_mutable_ptr(buf),
@@ -201,6 +203,7 @@ sshkey_fuzz_tests(void)
 	sshbuf_free(fuzzed);
 	fuzz_cleanup(fuzz);
 	TEST_DONE();
+#endif
 
 #ifdef OPENSSL_HAS_ECC
 	TEST_START("fuzz ECDSA private");
@@ -286,6 +289,8 @@ sshkey_fuzz_tests(void)
 	sshkey_free(k1);
 	TEST_DONE();
 
+#ifndef USING_WOLFSSL
+    /* wolfSSL does not support DSA in the EVP layer */
 	TEST_START("fuzz DSA public");
 	buf = load_file("dsa_1");
 	ASSERT_INT_EQ(sshkey_parse_private_fileblob(buf, "", &k1, NULL), 0);
@@ -299,6 +304,7 @@ sshkey_fuzz_tests(void)
 	public_fuzz(k1);
 	sshkey_free(k1);
 	TEST_DONE();
+#endif /* USING_WOLFSSL */
 
 #ifdef OPENSSL_HAS_ECC
 	TEST_START("fuzz ECDSA public");
@@ -356,6 +362,8 @@ sshkey_fuzz_tests(void)
 	sshkey_free(k1);
 	TEST_DONE();
 
+#ifndef USING_WOLFSSL
+    /* wolfSSL does not support DSA in the EVP layer */
 	TEST_START("fuzz DSA sig");
 	buf = load_file("dsa_1");
 	ASSERT_INT_EQ(sshkey_parse_private_fileblob(buf, "", &k1, NULL), 0);
@@ -363,6 +371,7 @@ sshkey_fuzz_tests(void)
 	sig_fuzz(k1, NULL);
 	sshkey_free(k1);
 	TEST_DONE();
+#endif
 
 #ifdef OPENSSL_HAS_ECC
 	TEST_START("fuzz ECDSA sig");

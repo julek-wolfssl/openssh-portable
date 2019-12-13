@@ -18,7 +18,8 @@
 #define _OPENSSL_COMPAT_H
 
 #include "includes.h"
-#ifdef WITH_OPENSSL
+
+#if defined(WITH_OPENSSL)// && !defined(USING_WOLFSSL)
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
@@ -229,5 +230,5 @@ EVP_MD_CTX *EVP_MD_CTX_new(void);
 void EVP_MD_CTX_free(EVP_MD_CTX *ctx);
 #endif /* HAVE_EVP_MD_CTX_free */
 
-#endif /* WITH_OPENSSL */
+#endif /* WITH_OPENSSL && !USING_WOLFSSL */
 #endif /* _OPENSSL_COMPAT_H */

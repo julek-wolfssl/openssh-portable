@@ -15,6 +15,8 @@
 
 #ifndef INCLUDES_H
 #define INCLUDES_H
+//#define WITH_OPENSSL
+//#define USING_WOLFSSL
 
 #include "config.h"
 
@@ -162,6 +164,11 @@
 # ifdef _INCLUDE__STDC__
 #  undef _INCLUDE__STDC__
 # endif
+#endif
+
+#ifdef USING_WOLFSSL
+#include <wolfssl/options.h>
+#include <openssl/dh.h>
 #endif
 
 #ifdef WITH_OPENSSL

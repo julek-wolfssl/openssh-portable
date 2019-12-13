@@ -477,6 +477,8 @@ sshkey_tests(void)
 	sshkey_free(k2);
 	TEST_DONE();
 
+#ifndef USING_WOLFSSL
+	/* wolfSSL does not support DSA in the EVP layer */
 	TEST_START("sign and verify DSA");
 	k1 = get_private("dsa_1");
 	ASSERT_INT_EQ(sshkey_load_public(test_data_file("dsa_2.pub"), &k2,
@@ -485,6 +487,7 @@ sshkey_tests(void)
 	sshkey_free(k1);
 	sshkey_free(k2);
 	TEST_DONE();
+#endif
 
 #ifdef OPENSSL_HAS_ECC
 	TEST_START("sign and verify ECDSA");

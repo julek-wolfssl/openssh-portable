@@ -152,7 +152,12 @@ addrinfo *malloc_ai(int port, u_long addr, const struct addrinfo *hints)
 }
 
 int
-getaddrinfo(const char *hostname, const char *servname,
+#ifndef HAVE_GETADDRINFO
+ssh_getaddrinfo
+#else
+getaddrinfo
+#endif
+(const char *hostname, const char *servname,
     const struct addrinfo *hints, struct addrinfo **res)
 {
 	struct hostent *hp;
