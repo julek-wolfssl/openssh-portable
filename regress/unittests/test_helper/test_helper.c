@@ -128,6 +128,10 @@ main(int argc, char **argv)
 {
 	int ch;
 
+#ifdef USING_WOLFSSL
+    wolfSSL_Debugging_ON();
+#endif
+
 	seed_rng();
 #ifdef WITH_OPENSSL
 	ERR_load_CRYPTO_strings();

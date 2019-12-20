@@ -4037,6 +4037,7 @@ AC_ARG_WITH(wolfssl,
     AC_DEFINE([HAVE_RSA_GET_DEFAULT_METHOD], [1], [Defined if using WolfSSL])
     AC_DEFINE([HAVE_OPENSSL_VERSION], [1], [Defined if using WolfSSL])
     AC_DEFINE([HAVE_EVP_CIPHER_CTX_CTRL], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_CIPHER_CTX_SET_IV], [1], [Defined if using WolfSSL])
     AC_DEFINE([HAVE_EVP_RIPEMD160], [1], [Defined if using WolfSSL])
     AC_DEFINE([HAVE_EVP_SHA384], [1], [Defined if using WolfSSL])
     AC_DEFINE([HAVE_EVP_SHA512], [1], [Defined if using WolfSSL])
