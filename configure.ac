@@ -2459,23 +2459,120 @@ AC_CHECK_FUNCS([getpgrp],[
 	)
 ])
 
-# Some systems want crypt() from libcrypt, *not* the version in OpenSSL,
-# because the system crypt() is more featureful.
-if test "x$check_for_libcrypt_before" = "x1"; then
-AC_CHECK_LIB(crypt, crypt)
-fi
+WOLFSSL_URL="https://www.wolfssl.com/download/"
+ENABLE_WOLFSSL="no"
+AC_ARG_WITH(wolfssl,
+    [  --with-wolfssl=PATH      PATH to wolfssl install (default /usr/local) ],
+    [
+    if test "x$withval" != "xno" ; then
+    if test -d "$withval/lib"; then
+    LDFLAGS="$LDFLAGS -L${withval}/lib"
+    LD="$LD -Wl,-rpath,${withval}/lib"
+    fi
+    if test -d "$withval/include"; then
+    CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}/include/wolfssl"
+    fi
+    fi
+    
+    if test "x$withval" == "xyes" ; then
+    LDFLAGS="-L/usr/local/lib $LDFLAGS"
+    CPPFLAGS="-I/usr/local/include -I/usr/local/include/wolfssl $CPPFLAGS"
+    LD="$LD -Wl,-rpath,/usr/local/lib"
+    fi
+    
+    AC_MSG_CHECKING([for wolfSSL])
+    LIBS="$LIBS -lwolfssl"
+    
+    AC_TRY_LINK([#include <openssl/ssl.h>], [ wolfSSL_Init(); ],
+    [ wolfssl_linked=yes ], [ wolfssl_linked=no ])
+    
+    if test "x$wolfssl_linked" == "xno" ; then
+    AC_MSG_ERROR([WolfSSL isn't found.  You can get it from $WOLFSSL_URL
+    
+    If it's already installed, specify its path using --with-wolfssl=/dir/])
+    fi
+    
+    AC_MSG_RESULT([yes])
+    ENABLE_WOLFSSL="yes"
+    DIGEST_SSL="digest-wolfssl.o"
+    SSL_COMPAT="wolfssl-compat.o"
+    RAND_MSG="WolfSSL Internal"
+    AC_DEFINE([USING_WOLFSSL], [1], [Defined if using WolfSSL])
+    AC_DEFINE([UNSUPPORTED_POSIX_THREADS_HACK], [1], [Defined if using WolfSSL])
+    # OpenSSL tests for these. Just assume these are present for wolfSSL.
+    AC_DEFINE([HAVE_BN_IS_PRIME_EX], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_SHA256_UPDATE], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_CRYPT], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_DES_CRYPT], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_DSA_GENERATE_PARAMETERS_EX], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_DIGESTFINAL_EX], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_DIGESTINIT_EX], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_MD_CTX_CLEANUP], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_MD_CTX_INIT], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_SHA256], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_HMAC_CTX_INIT], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_GENERATE_KEY_EX], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_GET_DEFAULT_METHOD], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_OPENSSL_VERSION], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_CIPHER_CTX_CTRL], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_CIPHER_CTX_SET_IV], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_RIPEMD160], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_SHA384], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_SHA512], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_OPENSSL_VERSION_NUM], [1], [Defined if using WolfSSL])
+    
+    # Dummy RSA method functions
+    AC_DEFINE([HAVE_RSA_METH_SET_PRIV_ENC], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_METH_SET_PRIV_DEC], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_METH_SET_PUB_ENC], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_METH_SET_PUB_DEC], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_RSA_METH_SET_FINISH], [1], [Defined if using WolfSSL])
+    AC_DEFINE([HAVE_EVP_PKEY_GET0_RSA], [1], [Defined if using WolfSSL])
+    
+    AC_DEFINE([OPENSSL_HAS_ECC], [1], [Defined if using WolfSSL])
+    AC_DEFINE([OPENSSL_HAS_NISTP256], [1], [Defined if using WolfSSL])
+    AC_DEFINE([OPENSSL_HAS_NISTP384], [1], [Defined if using WolfSSL])
+    AC_DEFINE([OPENSSL_HAS_NISTP521], [1], [Defined if using WolfSSL])
+    AC_DEFINE([OPENSSL_HAVE_EVPCTR], [1], [Defined if using WolfSSL])
+    
+    # Leave in place in case we use this in the future, AC_COMPILE_IFELSE works
+    # for now.
+    #AC_CHECK_LIB([wolfssl], [wc_wolfHasAesni], [ wolf_has_aesni=yes ], [ wolf_has_aesni=no ])
+    
+    AC_MSG_CHECKING([is wolfssl configured with aesni])
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+    #include <wolfssl/options.h>
+    #ifndef WOLFSSL_AESNI
+    # error macro not defined
+    #endif 
+    ]])], [ wolf_has_aesni=yes ], [ wolf_has_aesni=no ])
 
-# Some Linux systems (Slackware) need crypt() from libcrypt, *not* the
-# version in OpenSSL.
-if test "x$check_for_libcrypt_later" = "x1"; then
-AC_CHECK_LIB(crypt, crypt, LIBS="$LIBS -lcrypt")
-fi
+    if test "x$wolf_has_aesni" == "xyes" ; then
+        AC_MSG_RESULT([yes])
+        AC_MSG_CHECKING([is gcc compiler detected])
+        if test "$GCC" = "yes"
+        then
+            AC_MSG_RESULT([yes])
+            AC_MSG_CHECKING([is compiler set to icc])
+            if test "$CC" != "icc"
+            then
+                AC_MSG_RESULT([not icc, add flags -maes and -msse4])
+                CFLAGS="$CFLAGS -maes -msse4"
+            else
+                AC_MSG_RESULT([using icc compiler. Do not add -maes and -msse4])
+            fi
+        else
+            AC_MSG_RESULT([no gcc])
+        fi
+    else
+        AC_MSG_RESULT([no])
+    fi
 
-if test X"$ENABLE_CYASSL" = Xno; then
+])
 
-# end TAO WolfSSL adds except fi after openssl stuff
+AC_SUBST([ENABLE_WOLFSSL])
 
-# TAO PKCS#11 for OpenSSL only for now
+if test "x$ENABLE_WOLFSSL" = "xno"; then
 
 # Search for OpenSSL
 DIGEST_SSL="digest-openssl.o"
@@ -3061,6 +3158,11 @@ if test "x$openssl" = "xyes" ; then
 	)
 fi
 
+else
+    AC_CHECK_LIB([crypt], [crypt], [LIBS="$LIBS -lcrypt"])
+    AC_CHECK_FUNCS([crypt])
+fi # ENABLE_WOLFSSL endif
+
 # PRNGD TCP socket
 AC_ARG_WITH([prngd-port],
 	[  --with-prngd-port=PORT  read entropy from PRNGD/EGD TCP localhost:PORT],
@@ -3143,14 +3245,12 @@ elif test ! -z "$OPENSSL_SEEDS_ITSELF" ; then
 	AC_DEFINE([OPENSSL_PRNG_ONLY], [1],
 		[Define if you want the OpenSSL internally seeded PRNG only])
 	RAND_MSG="OpenSSL internal ONLY"
-elif test "x$openssl" = "xno" ; then
+elif test "x$ENABLE_WOLFSSL" = "xyes"; then
+    AC_MSG_WARN([OpenSSH will use /dev/urandom or /dev/random as a source of random numbers. It will fail if both devices are not supported or accessible])	
+elif test "x$openssl" = "xno"; then
 	AC_MSG_WARN([OpenSSH will use /dev/urandom as a source of random numbers. It will fail if this device is not supported or accessible])
 else
 	AC_MSG_ERROR([OpenSSH has no source of random numbers. Please configure OpenSSL with an entropy source or re-run configure using one of the --with-prngd-port or --with-prngd-socket options])
-fi
-
-
-# TAO cyassl endif for openssl adds
 fi
 
 # Check for PAM libs
@@ -3978,121 +4078,6 @@ main() { exit(0); }
 		AC_MSG_WARN([cross compiling: Assuming working snprintf()])
 	)
 fi
-
-# TAO WolfSSL adds
-
-WOLFSSL_URL="https://www.wolfssl.com/download/"
-ENABLE_WOLFSSL="no"
-AC_ARG_WITH(wolfssl,
-    [  --with-wolfssl=PATH      PATH to wolfssl install (default /usr/local) ],
-    [
-    if test "x$withval" != "xno" ; then
-    if test -d "$withval/lib"; then
-    LDFLAGS="$LDFLAGS -L${withval}/lib"
-    LD="$LD -Wl,-rpath,${withval}/lib"
-    fi
-    if test -d "$withval/include"; then
-    CPPFLAGS="$CPPFLAGS -I${withval}/include -I${withval}/include/wolfssl"
-    fi
-    fi
-    
-    if test "x$withval" == "xyes" ; then
-    LDFLAGS="-L/usr/local/lib $LDFLAGS"
-    CPPFLAGS="-I/usr/local/include -I/usr/local/include/wolfssl $CPPFLAGS"
-    LD="$LD -Wl,-rpath,/usr/local/lib"
-    fi
-    
-    AC_MSG_CHECKING([for wolfSSL])
-    LIBS="$LIBS -lwolfssl"
-    
-    AC_TRY_LINK([#include <openssl/ssl.h>], [ wolfSSL_Init(); ],
-    [ wolfssl_linked=yes ], [ wolfssl_linked=no ])
-    
-    if test "x$wolfssl_linked" == "xno" ; then
-    AC_MSG_ERROR([WolfSSL isn't found.  You can get it from $WOLFSSL_URL
-    
-    If it's already installed, specify its path using --with-wolfssl=/dir/])
-    fi
-    
-    AC_MSG_RESULT([yes])
-    ENABLE_WOLFSSL="yes"
-    DIGEST_SSL="digest-wolfssl.o"
-    SSL_COMPAT="wolfssl-compat.o"
-    RAND_MSG="WolfSSL Internal"
-    AC_DEFINE([USING_WOLFSSL], [1], [Defined if using WolfSSL])
-    AC_DEFINE([UNSUPPORTED_POSIX_THREADS_HACK], [1], [Defined if using WolfSSL])
-    # OpenSSL tests for these. Just assume these are present for wolfSSL.
-    AC_DEFINE([HAVE_BN_IS_PRIME_EX], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_SHA256_UPDATE], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_CRYPT], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_DES_CRYPT], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_DSA_GENERATE_PARAMETERS_EX], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_DIGESTFINAL_EX], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_DIGESTINIT_EX], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_MD_CTX_CLEANUP], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_MD_CTX_INIT], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_SHA256], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_HMAC_CTX_INIT], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_GENERATE_KEY_EX], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_GET_DEFAULT_METHOD], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_OPENSSL_VERSION], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_CIPHER_CTX_CTRL], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_CIPHER_CTX_SET_IV], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_RIPEMD160], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_SHA384], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_SHA512], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_OPENSSL_VERSION_NUM], [1], [Defined if using WolfSSL])
-    
-    # Dummy RSA method functions
-    AC_DEFINE([HAVE_RSA_METH_SET_PRIV_ENC], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_METH_SET_PRIV_DEC], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_METH_SET_PUB_ENC], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_METH_SET_PUB_DEC], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_RSA_METH_SET_FINISH], [1], [Defined if using WolfSSL])
-    AC_DEFINE([HAVE_EVP_PKEY_GET0_RSA], [1], [Defined if using WolfSSL])
-    
-    AC_DEFINE([OPENSSL_HAS_ECC], [1], [Defined if using WolfSSL])
-    AC_DEFINE([OPENSSL_HAS_NISTP256], [1], [Defined if using WolfSSL])
-    AC_DEFINE([OPENSSL_HAS_NISTP384], [1], [Defined if using WolfSSL])
-    AC_DEFINE([OPENSSL_HAS_NISTP521], [1], [Defined if using WolfSSL])
-    AC_DEFINE([OPENSSL_HAVE_EVPCTR], [1], [Defined if using WolfSSL])
-    
-    # Leave in place in case we use this in the future, AC_COMPILE_IFELSE works
-    # for now.
-    #AC_CHECK_LIB([wolfssl], [wc_wolfHasAesni], [ wolf_has_aesni=yes ], [ wolf_has_aesni=no ])
-    
-    AC_MSG_CHECKING([is wolfssl configured with aesni])
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-    #include <wolfssl/options.h>
-    #ifndef WOLFSSL_AESNI
-    # error macro not defined
-    #endif 
-    ]])], [ wolf_has_aesni=yes ], [ wolf_has_aesni=no ])
-
-    if test "x$wolf_has_aesni" == "xyes" ; then
-        AC_MSG_RESULT([yes])
-        AC_MSG_CHECKING([is gcc compiler detected])
-        if test "$GCC" = "yes"
-        then
-            AC_MSG_RESULT([yes])
-            AC_MSG_CHECKING([is compiler set to icc])
-            if test "$CC" != "icc"
-            then
-                AC_MSG_RESULT([not icc, add flags -maes and -msse4])
-                CFLAGS="$CFLAGS -maes -msse4"
-            else
-                AC_MSG_RESULT([using icc compiler. Do not add -maes and -msse4])
-            fi
-        else
-            AC_MSG_RESULT([no gcc])
-        fi
-    else
-        AC_MSG_RESULT([no])
-    fi
-
-])
-
-AC_SUBST([ENABLE_WOLFSSL])
 
 dnl Checks for structure members
 OSSH_CHECK_HEADER_FOR_FIELD([ut_host], [utmp.h], [HAVE_HOST_IN_UTMP])

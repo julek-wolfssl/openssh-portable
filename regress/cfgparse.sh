@@ -4,9 +4,9 @@
 tid="sshd config parse"
 
 # This is a reasonable proxy for IPv6 support.
-#if ! config_defined HAVE_STRUCT_IN6_ADDR ; then
+if ! config_defined HAVE_STRUCT_IN6_ADDR ; then
 	SKIP_IPV6=yes
-#fi
+fi
 
 # We need to use the keys generated for the regression test because sshd -T
 # will fail if we're not running with SUDO (no permissions for real keys) or

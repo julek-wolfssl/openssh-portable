@@ -15,8 +15,6 @@
 
 #ifndef INCLUDES_H
 #define INCLUDES_H
-//#define WITH_OPENSSL
-//#define USING_WOLFSSL
 
 #include "config.h"
 

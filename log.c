@@ -250,7 +250,7 @@ debug3(const char *fmt,...)
 }
 
 static void Logging_cb(const int logLevel, const char *const logMessage) {
-    debug(logMessage);
+    debug("%s", logMessage);
 }
 
 /*

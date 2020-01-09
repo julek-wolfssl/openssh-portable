@@ -2,7 +2,6 @@
 #	Placed in the Public Domain.
 
 tid="address match"
-TEST_SSH_IPV6=no
 
 mv $OBJ/sshd_proxy $OBJ/sshd_proxy_bak
 

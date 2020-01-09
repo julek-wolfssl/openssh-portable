@@ -572,7 +572,7 @@ int
 (*RSA_meth_get_finish(const RSA_METHOD *meth))(RSA *rsa)
 {
 #ifdef USING_WOLFSSL
-    return NULL;
+	return NULL;
 #else
 	return meth->finish;
 #endif
