@@ -38,6 +38,7 @@
 #ifdef WITH_OPENSSL
 #include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
 #endif
 
 #if defined(HAVE_STRNVIS) && defined(HAVE_VIS_H) && !defined(BROKEN_STRNVIS)
