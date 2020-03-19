@@ -249,6 +249,10 @@ debug3(const char *fmt,...)
 	va_end(args);
 }
 
+static void Logging_cb(const int logLevel, const char *const logMessage) {
+    debug("%s", logMessage);
+}
+
 /*
  * Initialize the log.
  */
@@ -261,6 +265,11 @@ log_init(char *av0, LogLevel level, SyslogFacility facility, int on_stderr)
 #endif
 
 	argv0 = av0;
+
+#ifdef USING_WOLFSSL
+    wolfSSL_Debugging_ON();
+    wolfSSL_SetLoggingCb(Logging_cb);
+#endif
 
 	if (log_change_level(level) != 0) {
 		fprintf(stderr, "Unrecognized internal syslog level code %d\n",

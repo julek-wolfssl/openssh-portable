@@ -695,6 +695,7 @@ interop-tests t-exec file-tests: regress-prep regress-binaries $(TARGETS)
 		.OBJDIR="$${BUILDDIR}/regress" \
 		.CURDIR="`pwd`" \
 		BUILDDIR="$${BUILDDIR}" \
+		ENABLE_WOLFSSL="@ENABLE_WOLFSSL@" \
 		OBJ="$${BUILDDIR}/regress/" \
 		PATH="$${BUILDDIR}:$${PATH}" \
 		TEST_ENV=MALLOC_OPTIONS="@TEST_MALLOC_OPTIONS@" \

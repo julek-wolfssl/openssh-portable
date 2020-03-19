@@ -42,8 +42,10 @@
 #include "readpassphrase.h"
 #include "vis.h"
 #include "getrrsetbyname.h"
+#ifndef USING_WOLFSSL
 #include "sha1.h"
 #include "sha2.h"
+#endif
 #include "md5.h"
 #include "blf.h"
 #include "fnmatch.h"

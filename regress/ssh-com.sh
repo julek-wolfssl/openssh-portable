@@ -57,7 +57,7 @@ sed "s/HostKeyAlias.*/HostKeyAlias ssh2-localhost-with-alias/" \
 
 # we need a DSA key for
 rm -f                             ${OBJ}/dsa ${OBJ}/dsa.pub
-${SSHKEYGEN} -q -N '' -t dsa -f	  ${OBJ}/dsa
+${SSHKEYGEN} -q -N '' -t rsa -f	  ${OBJ}/dsa
 
 # setup userdir, try rsa first
 mkdir -p ${OBJ}/${USER}
